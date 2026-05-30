@@ -7,8 +7,9 @@
   --ink-soft:  #2A2E33;
   --muted:     #6B6F76;
   --border:    #E0DBD0;
-  --sage:      #7C8B68;
-  --sage-deep: #475441;
+  --neon:      #FF2D8B;
+  --neon-deep: #A6005C;
+  --neon-soft: #FFB3D1;
 }
 
 * { box-sizing: border-box; }
@@ -57,9 +58,9 @@ a { color: inherit; text-decoration: none; }
 .brand .dot {
   width: 10px;
   height: 10px;
-  background: var(--sage);
+  background: var(--neon);
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(124, 139, 104, 0.18);
+  box-shadow: 0 0 0 3px rgba(255, 45, 139, 0.18);
 }
 
 .nav-links {
@@ -98,7 +99,7 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
   letter-spacing: 1.4px;
   text-transform: uppercase;
-  color: var(--sage-deep);
+  color: var(--neon-deep);
   font-weight: 500;
   margin-bottom: 22px;
 }
@@ -107,7 +108,7 @@ a { color: inherit; text-decoration: none; }
   content: "";
   width: 24px;
   height: 1px;
-  background: var(--sage-deep);
+  background: var(--neon-deep);
   display: inline-block;
 }
 
@@ -122,7 +123,7 @@ a { color: inherit; text-decoration: none; }
 .hero h1 em {
   font-style: italic;
   font-weight: 500;
-  color: var(--sage-deep);
+  color: var(--neon-deep);
 }
 
 .hero p {
@@ -202,7 +203,7 @@ footer {
 .status-pill .pulse {
   width: 6px;
   height: 6px;
-  background: var(--sage);
+  background: var(--neon);
   border-radius: 50%;
   animation: dash-pulse 2s ease-in-out infinite;
 }

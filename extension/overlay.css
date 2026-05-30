@@ -1,4 +1,4 @@
-/* EverNav overlay — editorial cream/ink/sage palette.
+/* EverNav overlay — editorial cream/ink/neon-pink palette.
    All IDs/classes prefixed __evernav__ to avoid host-site collisions. */
 
 #__evernav_backdrop__ {
@@ -34,9 +34,9 @@
   box-shadow:
     0 0 0 2px #0F1419,
     0 0 0 5px #F1EFE9,
-    0 0 0 7px #7C8B68,
-    0 0 28px 8px rgba(124, 139, 104, 0.55),
-    0 0 80px 18px rgba(124, 139, 104, 0.25);
+    0 0 0 7px #FF2D8B,
+    0 0 28px 8px rgba(255, 45, 139, 0.55),
+    0 0 80px 18px rgba(255, 45, 139, 0.25);
   animation: __evernav_pulse__ 1.6s ease-in-out infinite;
 }
 
@@ -61,7 +61,7 @@
   font-size: 10px;
   letter-spacing: 1.6px;
   text-transform: uppercase;
-  color: #A8B388;
+  color: #FFB3D1;
   margin-bottom: 5px;
   font-weight: 500;
 }
@@ -71,17 +71,17 @@
     box-shadow:
       0 0 0 2px #0F1419,
       0 0 0 5px #F1EFE9,
-      0 0 0 7px #7C8B68,
-      0 0 28px 8px rgba(124, 139, 104, 0.55),
-      0 0 80px 18px rgba(124, 139, 104, 0.25);
+      0 0 0 7px #FF2D8B,
+      0 0 28px 8px rgba(255, 45, 139, 0.55),
+      0 0 80px 18px rgba(255, 45, 139, 0.25);
   }
   50% {
     box-shadow:
       0 0 0 2px #0F1419,
       0 0 0 5px #F1EFE9,
-      0 0 0 7px #7C8B68,
-      0 0 40px 12px rgba(124, 139, 104, 0.7),
-      0 0 120px 28px rgba(124, 139, 104, 0.35);
+      0 0 0 7px #FF2D8B,
+      0 0 40px 12px rgba(255, 45, 139, 0.7),
+      0 0 120px 28px rgba(255, 45, 139, 0.35);
   }
 }
 
@@ -127,9 +127,9 @@
 #__evernav_thinking__ .__evernav_orb__ {
   width: 9px;
   height: 9px;
-  background: #A8B388;
+  background: #FFB3D1;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(168, 179, 136, 0.7), 0 0 12px rgba(168, 179, 136, 0.8);
+  box-shadow: 0 0 0 0 rgba(255, 179, 209, 0.7), 0 0 12px rgba(255, 179, 209, 0.8);
   animation: __evernav_orb_pulse__ 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -144,7 +144,7 @@
 #__evernav_thinking__ .__evernav_dots__ span {
   width: 4px;
   height: 4px;
-  background: #A8B388;
+  background: #FFB3D1;
   border-radius: 50%;
   opacity: 0.35;
   animation: __evernav_dot_bounce__ 1.2s ease-in-out infinite;
@@ -155,11 +155,11 @@
 @keyframes __evernav_orb_pulse__ {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(168, 179, 136, 0.65), 0 0 12px rgba(168, 179, 136, 0.65);
+    box-shadow: 0 0 0 0 rgba(255, 179, 209, 0.65), 0 0 12px rgba(255, 179, 209, 0.65);
   }
   50% {
     transform: scale(1.2);
-    box-shadow: 0 0 0 9px rgba(168, 179, 136, 0), 0 0 22px rgba(168, 179, 136, 0.95);
+    box-shadow: 0 0 0 9px rgba(255, 179, 209, 0), 0 0 22px rgba(255, 179, 209, 0.95);
   }
 }
 

@@ -462,9 +462,9 @@ function toggleBigBadge() {
       color: "#F1EFE9",
       font: "600 30px/1.05 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
       letterSpacing: "-0.5px",
-      border: "1px solid rgba(124, 139, 104, 0.6)",
+      border: "1px solid rgba(255, 45, 139, 0.6)",
       borderRadius: "999px",
-      boxShadow: "0 16px 48px rgba(15, 20, 25, 0.45), 0 0 0 4px rgba(124, 139, 104, 0.18)",
+      boxShadow: "0 16px 48px rgba(15, 20, 25, 0.45), 0 0 0 4px rgba(255, 45, 139, 0.18)",
       pointerEvents: "none",
     });
     bigBadgeEl.textContent = activeUser || "demo_user_1";
