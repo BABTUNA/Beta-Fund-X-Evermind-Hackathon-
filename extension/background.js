@@ -71,11 +71,14 @@ their stated task. Prefer elements whose \`text\` or \`aria\` matches the
 task intent. The screenshot is only the visible viewport — if the task
 requires off-screen content, pick an element that will scroll there.
 
-Return STRICT JSON, nothing else, no markdown fences:
+RESPONSE FORMAT — you MUST return ONLY a JSON object, no prose, no markdown:
 {"idx": <number>, "instruction": "<one short imperative sentence>", "done": <boolean>}
 
-If the task appears complete based on the current screenshot, set
-done=true and idx=-1.`;
+If the task already appears complete, OR no element on the page is a
+useful next step, return:
+{"idx": -1, "instruction": "Task complete.", "done": true}
+
+Never reply in English. Never explain. Always return JSON.`;
 
 async function callVision({ screenshotB64, elements, task, apiKey }) {
   const body = {
@@ -125,16 +128,44 @@ async function callVision({ screenshotB64, elements, task, apiKey }) {
 }
 
 function parseVisionJson(text) {
-  // Strip markdown fences in case the model ignored the system prompt.
+  // 1) Try strict JSON parse (handles markdown fences + leading prose).
   const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
-  // Find the first {…} block if the model added prose.
   const match = stripped.match(/\{[\s\S]*\}/);
-  const raw = match ? match[0] : stripped;
-  const parsed = JSON.parse(raw);
-  if (typeof parsed.idx !== "number") throw new Error("vision returned no idx");
-  if (typeof parsed.done !== "boolean") parsed.done = false;
-  if (typeof parsed.instruction !== "string") parsed.instruction = "Click this.";
-  return parsed;
+  if (match) {
+    try {
+      const parsed = JSON.parse(match[0]);
+      if (typeof parsed.idx === "number") {
+        if (typeof parsed.done !== "boolean") parsed.done = false;
+        if (typeof parsed.instruction !== "string") parsed.instruction = "Click this.";
+        return parsed;
+      }
+    } catch (e) {
+      // fall through to prose recovery
+    }
+  }
+
+  // 2) Claude returned prose — recover a "done" signal from natural language.
+  console.warn("[evernav] vision returned non-JSON; raw text:", text.slice(0, 400));
+  const lower = text.toLowerCase();
+  const doneSignals = [
+    "task is complete",
+    "task complete",
+    "appears complete",
+    "already done",
+    "no further action",
+    "no more steps",
+    "successfully completed",
+    "no actionable",
+    "cannot determine",
+    "unable to identify",
+    "this page does not",
+    "this page doesn't",
+  ];
+  if (doneSignals.some((s) => lower.includes(s))) {
+    return { idx: -1, done: true, instruction: "Task complete." };
+  }
+
+  throw new Error(`vision returned non-JSON: ${text.slice(0, 120)}`);
 }
 
 // Verified against the everos Python SDK v0.4.0 (base_url https://api.evermind.ai,
@@ -387,6 +418,10 @@ async function requestNextLiveStep() {
   } catch (e) {
     console.error("[evernav] vision call failed:", e);
     await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
+    // Fail-safe: stop the session so the pill doesn't get stuck and so
+    // we don't keep retrying against a bad page. User can hit Guide me
+    // again to restart from the current viewport.
+    await stopGuidance({ tabId: st.tabId });
     return;
   }
 
