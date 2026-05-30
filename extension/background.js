@@ -336,11 +336,21 @@ async function requestNextLiveStep() {
     return;
   }
 
-  // Show the "thinking" pill on the page before any blocking work.
-  await dispatchToContent(st.tabId, {
-    type: "SHOW_THINKING",
-    label: st.step === 0 ? "Reading the page…" : "Picking the next step…",
-  });
+  const firstStep = st.step === 0;
+  const thinkingLabel = firstStep ? "Reading the page…" : "Picking the next step…";
+
+  // Fire the thinking pill immediately (best-effort — content script might
+  // still be mid-teardown on a hard nav, so the message could quietly drop).
+  dispatchToContent(st.tabId, { type: "SHOW_THINKING", label: thinkingLabel });
+
+  // After a click, the page is almost always navigating (Turbo swap or hard
+  // load on github.com). Screenshot/enumerate before it settles and we'll see
+  // a stale DOM. Wait, then resend the pill in case the prior dispatch hit a
+  // dying content script.
+  if (!firstStep) {
+    await new Promise((r) => setTimeout(r, 1500));
+    dispatchToContent(st.tabId, { type: "SHOW_THINKING", label: thinkingLabel });
+  }
 
   // 1) Screenshot the active tab.
   const screenshotDataUrl = await chrome.tabs.captureVisibleTab(undefined, {
@@ -350,9 +360,16 @@ async function requestNextLiveStep() {
   const screenshotB64 = screenshotDataUrl.split(",")[1];
 
   // 2) Ask the content script for the current interactive-element list.
-  const enumResp = await dispatchToContent(st.tabId, { type: "ENUMERATE_ELEMENTS" });
+  //    On hard navs the content script may still be initializing — retry a
+  //    few times before giving up.
+  let enumResp = null;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    enumResp = await dispatchToContent(st.tabId, { type: "ENUMERATE_ELEMENTS" });
+    if (enumResp?.ok && Array.isArray(enumResp.elements) && enumResp.elements.length > 0) break;
+    await new Promise((r) => setTimeout(r, 500));
+  }
   if (!enumResp?.ok) {
-    console.error("[evernav] could not enumerate elements");
+    console.error("[evernav] could not enumerate elements after retries");
     await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
     return;
   }
