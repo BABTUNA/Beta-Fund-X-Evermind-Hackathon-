@@ -179,8 +179,23 @@ function renderOverlay(target, instruction, opts = {}) {
   // Clone of target so it appears sharp above the blurred backdrop.
   // Using a literal innerHTML clone preserves rendered look without hooking
   // up React/Turbo internals.
+  //
+  // The clone wrapper inherits the page's body bg + text color so the
+  // cloned element keeps the same readability it had in context. (Without
+  // this, dark-mode GitHub's white text rendered on the previous cream
+  // background was invisible — see screenshot bug.)
   const clone = document.createElement("div");
   clone.id = "__evernav_clone__";
+  const bodyStyle = getComputedStyle(document.body);
+  const pageBg = bodyStyle.backgroundColor;
+  const pageColor = bodyStyle.color;
+  // If body bg is transparent (rare), fall back to the html element's bg.
+  const effectiveBg =
+    pageBg && pageBg !== "rgba(0, 0, 0, 0)" && pageBg !== "transparent"
+      ? pageBg
+      : getComputedStyle(document.documentElement).backgroundColor || "#FAFAF7";
+  clone.style.background = effectiveBg;
+  clone.style.color = pageColor || "inherit";
   clone.innerHTML = target.outerHTML;
   // Strip ids from cloned subtree to avoid duplicate-id pollution.
   clone.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));

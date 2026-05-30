@@ -13,12 +13,13 @@
 }
 
 /* Sharp clone of the target, slightly larger than the element so blur
-   never seeps through anti-aliased edges. */
+   never seeps through anti-aliased edges. The bg + color are set inline
+   from the page's computed body styles so the cloned element keeps the
+   readability it had in its original context. */
 #__evernav_clone__ {
   position: fixed;
   z-index: 2147483646;
   pointer-events: none;
-  background: #FAFAF7;
   border-radius: 6px;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.15),
