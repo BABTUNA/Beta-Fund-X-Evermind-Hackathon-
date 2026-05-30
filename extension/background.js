@@ -451,17 +451,20 @@ async function requestNextLiveStep() {
   const firstStep = st.step === 0;
   const thinkingLabel = firstStep ? "Reading the page…" : "Picking the next step…";
 
-  // Fire the thinking pill immediately (best-effort — content script might
-  // still be mid-teardown on a hard nav, so the message could quietly drop).
+  // Fire the thinking pill + control bar immediately (best-effort — content
+  // script might still be mid-teardown on a hard nav, so the message could
+  // quietly drop).
   dispatchToContent(st.tabId, { type: "SHOW_THINKING", label: thinkingLabel });
+  dispatchToContent(st.tabId, { type: "SHOW_CONTROL", task: st.task });
 
   // After a click, the page is almost always navigating (Turbo swap or hard
   // load on github.com). Screenshot/enumerate before it settles and we'll see
-  // a stale DOM. Wait, then resend the pill in case the prior dispatch hit a
-  // dying content script.
+  // a stale DOM. Wait, then resend both UI bits in case the prior dispatch
+  // hit a dying content script (or the new page hasn't mounted yet).
   if (!firstStep) {
     await new Promise((r) => setTimeout(r, 1500));
     dispatchToContent(st.tabId, { type: "SHOW_THINKING", label: thinkingLabel });
+    dispatchToContent(st.tabId, { type: "SHOW_CONTROL", task: st.task });
   }
 
   // 1) Screenshot the active tab — capture against the EXACT window that holds
