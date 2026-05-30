@@ -15,7 +15,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const EVERMIND_BASE = process.env.EVERMIND_BASE || "https://everos.evermind.ai/api/v1";
+const EVERMIND_BASE = process.env.EVERMIND_BASE || "https://api.evermind.ai/api/v1";
 const SHARED_USER = process.env.SHARED_USER || "global_skills";
 const KEY = process.env.EVERMIND_KEY;
 
