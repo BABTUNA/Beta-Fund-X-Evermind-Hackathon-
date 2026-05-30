@@ -80,11 +80,48 @@ useful next step, return:
 
 Never reply in English. Never explain. Always return JSON.`;
 
-async function callVision({ screenshotB64, elements, task, apiKey }) {
+// Site-specific guidance injected as an additional system instruction when the
+// agent is operating on a known site. Surfaces flow knowledge that's easy for
+// vision alone to mis-route ("Password and authentication" vs "Developer
+// settings" on github.com is a famous trap).
+const SITE_HINTS = {
+  "github.com": `SITE: github.com — known navigation traps:
+
+For "rotate / create / view personal access token" tasks:
+  1. From any page, click the user avatar in the top-right header.
+  2. Click "Settings" in the dropdown.
+  3. In the settings left sidebar, scroll all the way DOWN to
+     "Developer settings" (it sits at the bottom, BELOW the
+     "Archives" / "Security log" items).
+  4. Personal access tokens live under "Developer settings" →
+     "Personal access tokens" → "Tokens (classic)" or "Fine-grained tokens".
+
+DO NOT confuse "Developer settings" with "Password and authentication"
+— "Password and authentication" is for 2FA / passwords / passkeys, NOT
+for personal access tokens. They appear in the same sidebar; pick the
+one that literally says "Developer settings".
+
+For "create a repo": click the "+" icon in the top-right header → "New repository".
+For "delete a repo": Settings tab on the repo page → scroll to "Danger Zone" at the bottom.`,
+};
+
+function siteHintsFor(url) {
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return SITE_HINTS[host] || "";
+  } catch {
+    return "";
+  }
+}
+
+async function callVision({ screenshotB64, elements, task, apiKey, siteHints }) {
+  const system = siteHints
+    ? `${VISION_SYSTEM}\n\n---\n\n${siteHints}`
+    : VISION_SYSTEM;
   const body = {
     model: VISION_MODEL,
     max_tokens: 256,
-    system: VISION_SYSTEM,
+    system,
     messages: [
       {
         role: "user",
@@ -383,8 +420,25 @@ async function requestNextLiveStep() {
     dispatchToContent(st.tabId, { type: "SHOW_THINKING", label: thinkingLabel });
   }
 
-  // 1) Screenshot the active tab.
-  const screenshotDataUrl = await chrome.tabs.captureVisibleTab(undefined, {
+  // 1) Screenshot the active tab — capture against the EXACT window that holds
+  //    our target tab, not chrome.windows.WINDOW_ID_CURRENT (which can be the
+  //    DevTools window if it's focused, throwing "Cannot access devtools://").
+  let tabMeta;
+  try {
+    tabMeta = await chrome.tabs.get(st.tabId);
+  } catch (e) {
+    console.error("[evernav] target tab disappeared:", e.message);
+    await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
+    await stopGuidance({ tabId: st.tabId });
+    return;
+  }
+  if (!tabMeta?.url || !/^https?:\/\//i.test(tabMeta.url)) {
+    console.error("[evernav] target tab is not a screenshotable URL:", tabMeta?.url);
+    await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
+    await stopGuidance({ tabId: st.tabId });
+    return;
+  }
+  const screenshotDataUrl = await chrome.tabs.captureVisibleTab(tabMeta.windowId, {
     format: "jpeg",
     quality: 70,
   });
@@ -414,6 +468,7 @@ async function requestNextLiveStep() {
       elements,
       task: st.task,
       apiKey: cfg.anthropic,
+      siteHints: siteHintsFor(tabMeta.url),
     });
   } catch (e) {
     console.error("[evernav] vision call failed:", e);
