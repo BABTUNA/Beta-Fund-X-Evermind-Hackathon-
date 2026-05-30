@@ -370,4 +370,65 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   return true;
 });
 
+// ─── demo-day hot-key safety net ──────────────────────────────────────────────
+//
+// Esoteric combinations to avoid clashes with github.com's own keybindings.
+// Triggered off-screen by a co-driver when a demo beat fails.
+
+const HOTKEYS = {
+  Digit1: { type: "DEMO_FORCE_BEAT_1" },
+  Digit2: { type: "DEMO_FORCE_BEAT_2" },
+  KeyD:   { type: "DEMO_OPEN_DASHBOARD" },
+  KeyR:   { type: "DEMO_REPRIME_CACHE" },
+  KeyL:   { type: "DEMO_TOGGLE_BIG_BADGE" },
+};
+
+window.addEventListener(
+  "keydown",
+  (e) => {
+    if (!e.shiftKey || !(e.metaKey || e.ctrlKey) || e.altKey) return;
+    const action = HOTKEYS[e.code];
+    if (!action) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (action.type === "DEMO_TOGGLE_BIG_BADGE") {
+      toggleBigBadge();
+    } else {
+      chrome.runtime.sendMessage(action);
+    }
+  },
+  true
+);
+
+// Big user-id badge: makes the user-switch unmistakable on the projected screen.
+let bigBadgeEl = null;
+function toggleBigBadge() {
+  if (bigBadgeEl) {
+    bigBadgeEl.remove();
+    bigBadgeEl = null;
+    return;
+  }
+  chrome.storage.session.get("activeUser").then(({ activeUser }) => {
+    bigBadgeEl = document.createElement("div");
+    bigBadgeEl.id = "__evernav_big_badge__";
+    Object.assign(bigBadgeEl.style, {
+      position: "fixed",
+      top: "20px",
+      right: "20px",
+      zIndex: "2147483647",
+      padding: "12px 22px",
+      background: "#0e1116",
+      color: "#00ff88",
+      font: "700 28px/1.1 ui-monospace, 'SF Mono', Menlo, monospace",
+      letterSpacing: "1px",
+      border: "2px solid #00ff88",
+      borderRadius: "12px",
+      boxShadow: "0 0 32px rgba(0,255,136,0.45)",
+      pointerEvents: "none",
+    });
+    bigBadgeEl.textContent = activeUser || "demo_user_1";
+    document.documentElement.appendChild(bigBadgeEl);
+  });
+}
+
 console.log("[evernav/content] loaded on", location.href);

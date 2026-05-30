@@ -408,6 +408,65 @@ async function dispatchToContent(tabId, msg) {
   }
 }
 
+// ─── demo-day fallbacks ───────────────────────────────────────────────────────
+
+const DASHBOARD_URL_KEY = "dashboardUrl";
+
+async function getFallbackTrail() {
+  // Pre-baked in chrome.storage.local by the prime-evermind script (commit 16).
+  // Shape: { task, site, trail: [{target: {tag,text,aria,...}, instruction}, ...] }
+  const { fallbackTrail } = await chrome.storage.local.get("fallbackTrail");
+  return fallbackTrail || null;
+}
+
+async function demoForceReplay(userOverride) {
+  const fb = await getFallbackTrail();
+  if (!fb) {
+    console.warn("[evernav] no fallback trail in storage — see scripts/prime-evermind");
+    return;
+  }
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) return;
+
+  if (userOverride) {
+    await chrome.storage.session.set({ activeUser: userOverride });
+  }
+  await setState({
+    task: fb.task,
+    user: userOverride || "demo_user_1",
+    site: fb.site,
+    tabId: tab.id,
+    trail: fb.trail,
+    step: 0,
+    status: "active",
+    source: "fallback",
+  });
+  await dispatchToContent(tab.id, { type: "REPLAY_TRAIL", trail: fb.trail });
+}
+
+async function demoOpenDashboard() {
+  const { dashboardUrl } = await chrome.storage.local.get(DASHBOARD_URL_KEY);
+  if (!dashboardUrl) {
+    console.warn("[evernav] dashboardUrl not set in storage.local");
+    return;
+  }
+  await chrome.tabs.create({ url: dashboardUrl });
+}
+
+async function demoReprimeCache() {
+  const st = await getState();
+  const fb = await getFallbackTrail();
+  if (!fb) return;
+  await evermindWrite({
+    task: fb.task,
+    site: fb.site,
+    trail: fb.trail,
+  });
+  console.log("[evernav] cache re-primed:", fb.task);
+}
+
+// ─── message router ───────────────────────────────────────────────────────────
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   (async () => {
     try {
@@ -420,6 +479,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         case "STEP_COMPLETED":
           await onStepCompleted(msg);
+          sendResponse({ ok: true });
+          break;
+        case "DEMO_FORCE_BEAT_1":
+          await demoForceReplay("demo_user_1");
+          sendResponse({ ok: true });
+          break;
+        case "DEMO_FORCE_BEAT_2":
+          await demoForceReplay("demo_user_2");
+          sendResponse({ ok: true });
+          break;
+        case "DEMO_OPEN_DASHBOARD":
+          await demoOpenDashboard();
+          sendResponse({ ok: true });
+          break;
+        case "DEMO_REPRIME_CACHE":
+          await demoReprimeCache();
           sendResponse({ ok: true });
           break;
         default:
