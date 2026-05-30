@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>EverNav — API Keys</title>
+  <style>
+    :root {
+      --bg: #0e1116; --panel: #161b22; --text: #e6edf3;
+      --muted: #8b949e; --accent: #00ff88; --border: #30363d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    h1 { font-size: 18px; margin: 0 0 6px; }
+    p.lede { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+    fieldset {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 0 0 16px;
+      background: var(--panel);
+    }
+    legend { padding: 0 6px; color: var(--muted); font-size: 12px; }
+    label { display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted); }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 8px 10px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font: 12px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    input:focus { outline: none; border-color: var(--accent); }
+    .row { margin-bottom: 10px; }
+    .hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
+    button {
+      padding: 10px 16px;
+      background: var(--accent);
+      color: #001a0e;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+    .status {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 16px;
+    }
+    .status.ok { color: var(--accent); }
+    .warn {
+      background: #2d1b00;
+      border: 1px solid #6b4500;
+      color: #ffd47a;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>EverNav — API Keys</h1>
+  <p class="lede">
+    Keys are stored locally in your browser via <code>chrome.storage.local</code>.
+    They never leave your machine except in direct calls to the listed APIs.
+  </p>
+
+  <div class="warn">
+    Bring your own keys. Don't commit these. The keys you paste here are not
+    bundled in the extension build.
+  </div>
+
+  <fieldset>
+    <legend>Anthropic (Claude vision)</legend>
+    <div class="row">
+      <label for="anthropic">API key</label>
+      <input type="password" id="anthropic" placeholder="sk-ant-…" autocomplete="off" />
+      <div class="hint">Used for the vision call. Set a spend cap in the Anthropic dashboard before the demo.</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Evermind EverOS</legend>
+    <div class="row">
+      <label for="evermind">API key</label>
+      <input type="password" id="evermind" placeholder="evos_…" autocomplete="off" />
+      <div class="hint">Cloud endpoint at https://everos.evermind.ai. Stores and retrieves cached click trails.</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Butterbase</legend>
+    <div class="row">
+      <label for="butterbase">API key</label>
+      <input type="password" id="butterbase" placeholder="bb_sk_…" autocomplete="off" />
+    </div>
+    <div class="row">
+      <label for="bbAppId">App ID</label>
+      <input type="text" id="bbAppId" placeholder="evernav" autocomplete="off" />
+      <div class="hint">The Butterbase app slug or UUID containing the <code>sessions</code> table.</div>
+    </div>
+  </fieldset>
+
+  <button id="save">Save</button>
+  <div class="status" id="status"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>
