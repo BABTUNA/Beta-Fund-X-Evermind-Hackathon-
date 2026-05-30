@@ -1,4 +1,4 @@
-/* EverNav overlay — editorial cream/ink/neon-pink palette.
+/* EverNav overlay — dark dev-tool palette with electric lime accent.
    All IDs/classes prefixed __evernav__ to avoid host-site collisions. */
 
 #__evernav_backdrop__ {
@@ -7,7 +7,7 @@
   z-index: 2147483645;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  background: rgba(15, 20, 25, 0.28);
+  background: rgba(10, 11, 10, 0.45);
   pointer-events: none;
   animation: __evernav_fade_in__ 220ms ease-out;
 }
@@ -18,11 +18,11 @@
   position: fixed;
   z-index: 2147483646;
   pointer-events: none;
-  background: #FAF8F2;
-  border-radius: 8px;
+  background: #FAFAF7;
+  border-radius: 6px;
   box-shadow:
-    0 0 0 1px rgba(15, 20, 25, 0.08),
-    0 12px 36px rgba(15, 20, 25, 0.35);
+    0 0 0 1px rgba(0, 0, 0, 0.15),
+    0 16px 40px rgba(0, 0, 0, 0.6);
   overflow: hidden;
 }
 
@@ -30,58 +30,56 @@
   position: fixed;
   z-index: 2147483647;
   pointer-events: none;
-  border-radius: 14px;
+  border-radius: 8px;
   box-shadow:
-    0 0 0 2px #0F1419,
-    0 0 0 5px #F1EFE9,
-    0 0 0 7px #FF2D8B,
-    0 0 28px 8px rgba(255, 45, 139, 0.55),
-    0 0 80px 18px rgba(255, 45, 139, 0.25);
+    0 0 0 1px #0A0B0A,
+    0 0 0 4px #C5FF00,
+    0 0 28px 6px rgba(197, 255, 0, 0.55),
+    0 0 80px 20px rgba(197, 255, 0, 0.25);
   animation: __evernav_pulse__ 1.6s ease-in-out infinite;
 }
 
 #__evernav_tooltip__ {
   position: fixed;
   z-index: 2147483647;
-  max-width: 300px;
-  padding: 12px 16px;
-  background: #0F1419;
-  color: #F1EFE9;
-  border-radius: 14px;
+  max-width: 320px;
+  padding: 14px 18px 14px 16px;
+  background: #0A0B0A;
+  color: #F2F2EE;
+  border: 1px solid #252824;
+  border-left: 2px solid #C5FF00;
+  border-radius: 4px;
   font: 13px/1.45 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   box-shadow:
-    0 0 0 1px rgba(15, 20, 25, 0.4),
-    0 16px 40px rgba(15, 20, 25, 0.5);
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 16px 40px rgba(0, 0, 0, 0.6);
   animation: __evernav_fade_in__ 220ms ease-out;
   pointer-events: none;
   letter-spacing: -0.1px;
 }
 #__evernav_tooltip__ .__evernav_kicker__ {
   display: block;
-  font-size: 10px;
-  letter-spacing: 1.6px;
+  font: 600 10px/1 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  color: #FFB3D1;
-  margin-bottom: 5px;
-  font-weight: 500;
+  color: #C5FF00;
+  margin-bottom: 6px;
 }
 
 @keyframes __evernav_pulse__ {
   0%, 100% {
     box-shadow:
-      0 0 0 2px #0F1419,
-      0 0 0 5px #F1EFE9,
-      0 0 0 7px #FF2D8B,
-      0 0 28px 8px rgba(255, 45, 139, 0.55),
-      0 0 80px 18px rgba(255, 45, 139, 0.25);
+      0 0 0 1px #0A0B0A,
+      0 0 0 4px #C5FF00,
+      0 0 28px 6px rgba(197, 255, 0, 0.55),
+      0 0 80px 20px rgba(197, 255, 0, 0.25);
   }
   50% {
     box-shadow:
-      0 0 0 2px #0F1419,
-      0 0 0 5px #F1EFE9,
-      0 0 0 7px #FF2D8B,
-      0 0 40px 12px rgba(255, 45, 139, 0.7),
-      0 0 120px 28px rgba(255, 45, 139, 0.35);
+      0 0 0 1px #0A0B0A,
+      0 0 0 4px #C5FF00,
+      0 0 44px 10px rgba(197, 255, 0, 0.75),
+      0 0 120px 28px rgba(197, 255, 0, 0.35);
   }
 }
 
@@ -96,7 +94,7 @@
   position: fixed;
   inset: 0;
   z-index: 2147483644;
-  background: rgba(15, 20, 25, 0.12);
+  background: rgba(10, 11, 10, 0.18);
   backdrop-filter: blur(1.5px);
   -webkit-backdrop-filter: blur(1.5px);
   pointer-events: none;
@@ -111,25 +109,28 @@
   display: inline-flex;
   align-items: center;
   gap: 11px;
-  padding: 10px 18px 10px 14px;
-  background: #0F1419;
-  color: #F1EFE9;
-  border-radius: 999px;
-  font: 600 13px/1 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  letter-spacing: -0.1px;
+  padding: 10px 16px 10px 14px;
+  background: #0A0B0A;
+  color: #F2F2EE;
+  border: 1px solid #252824;
+  border-left: 2px solid #C5FF00;
+  border-radius: 4px;
+  font: 500 12px/1 'JetBrains Mono', ui-monospace, "SF Mono", Menlo, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
   box-shadow:
-    0 0 0 1px rgba(15, 20, 25, 0.5),
-    0 14px 36px rgba(15, 20, 25, 0.4);
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 14px 36px rgba(0, 0, 0, 0.55);
   pointer-events: none;
   animation: __evernav_fade_in__ 240ms ease-out;
 }
 
 #__evernav_thinking__ .__evernav_orb__ {
-  width: 9px;
-  height: 9px;
-  background: #FFB3D1;
+  width: 8px;
+  height: 8px;
+  background: #C5FF00;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(255, 179, 209, 0.7), 0 0 12px rgba(255, 179, 209, 0.8);
+  box-shadow: 0 0 0 0 rgba(197, 255, 0, 0.7), 0 0 14px rgba(197, 255, 0, 0.9);
   animation: __evernav_orb_pulse__ 1.4s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -144,9 +145,9 @@
 #__evernav_thinking__ .__evernav_dots__ span {
   width: 4px;
   height: 4px;
-  background: #FFB3D1;
+  background: #C5FF00;
   border-radius: 50%;
-  opacity: 0.35;
+  opacity: 0.3;
   animation: __evernav_dot_bounce__ 1.2s ease-in-out infinite;
 }
 #__evernav_thinking__ .__evernav_dots__ span:nth-child(2) { animation-delay: 0.18s; }
@@ -155,11 +156,11 @@
 @keyframes __evernav_orb_pulse__ {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 179, 209, 0.65), 0 0 12px rgba(255, 179, 209, 0.65);
+    box-shadow: 0 0 0 0 rgba(197, 255, 0, 0.65), 0 0 14px rgba(197, 255, 0, 0.7);
   }
   50% {
     transform: scale(1.2);
-    box-shadow: 0 0 0 9px rgba(255, 179, 209, 0), 0 0 22px rgba(255, 179, 209, 0.95);
+    box-shadow: 0 0 0 10px rgba(197, 255, 0, 0), 0 0 24px rgba(197, 255, 0, 1);
   }
 }
 

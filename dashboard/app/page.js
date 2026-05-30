@@ -57,57 +57,67 @@ export default function Home() {
     <main className="wrap">
       <div className="topbar">
         <div className="brand">
-          <span className="dot" />
-          EverNav
+          evernav<span className="caret" />
         </div>
         <nav className="nav-links">
-          <a href="#">Skills</a>
-          <a href="#">Sessions</a>
-          <a href="#">About</a>
+          <a href="#">skills</a>
+          <a href="#">sessions</a>
+          <a href="#">docs</a>
         </nav>
         <button className="cta">Get the extension</button>
       </div>
 
       <section className="hero">
-        <span className="kicker">Live agent navigation</span>
-        <h1>
-          Web UIs are hostile. <em>EverNav</em> shows you exactly where to click.
-        </h1>
+        <span className="tag">Live agent navigation</span>
+        <div className="meta">
+          <span>v0.1.0</span>
+          <span className="sep">/</span>
+          <span>May 30, 2026</span>
+          <span className="sep">/</span>
+          <span>Chrome MV3</span>
+        </div>
+        <h1>Web UIs are hostile. EverNav shows you exactly where to click.</h1>
         <p>
-          A Chrome extension that watches the page and guides you through complex
-          flows — rotate a token, configure a webhook, change a setting — one
-          glowing step at a time. Every solved task becomes shared knowledge.
+          A Chrome extension that watches the active tab and walks you through complex flows —
+          rotate a token, configure a webhook, change a setting — one glowing step at a time.
+          Every completed task is written to <code>evermind</code> as a shared skill the next
+          agent can replay.
         </p>
       </section>
 
+      <div className="section-head">
+        <h2>Live telemetry</h2>
+        <span className="stamp">butterbase · sessions</span>
+      </div>
+
       <section className="grid">
         <div className="card">
-          <span className="num">{display(counts.skills)}</span>
           <span className="label">Skills learned</span>
+          <span className="num">{display(counts.skills)}</span>
         </div>
         <div className="card">
-          <span className="num">{display(counts.users)}</span>
           <span className="label">Users helped</span>
+          <span className="num">{display(counts.users)}</span>
         </div>
         <div className="card">
-          <span className="num">{display(counts.sessions)}</span>
           <span className="label">Sessions logged</span>
+          <span className="num">{display(counts.sessions)}</span>
         </div>
       </section>
 
       <footer>
-        <span>EverNav · Beta Fund × Evermind hackathon · 2026</span>
+        <span>EverNav · Beta Fund × Evermind · 2026</span>
         {state === "live" && (
-          <span className="status-pill"><span className="pulse" />Live from Butterbase</span>
+          <span className="status-pill"><span className="pulse" />Live · Butterbase</span>
         )}
         {state === "loading" && (
           <span className="status-pill">Loading…</span>
         )}
         {state === "unconfigured" && (
-          <span className="status-pill">Set NEXT_PUBLIC_BB_APP_ID + READ_KEY, rebuild.</span>
+          <span className="status-pill">Set NEXT_PUBLIC_BB_APP_ID + READ_KEY</span>
         )}
         {state === "error" && (
-          <span className="status-pill">Couldn't reach Butterbase.</span>
+          <span className="status-pill">Butterbase unreachable</span>
         )}
       </footer>
     </main>
