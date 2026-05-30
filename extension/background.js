@@ -467,12 +467,39 @@ async function onStepCompleted({ stepIndex, target }) {
 
 // ─── messaging ────────────────────────────────────────────────────────────────
 
+async function ensureContentScript(tabId) {
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: ["content.js"] });
+    await chrome.scripting.insertCSS({ target: { tabId }, files: ["overlay.css"] });
+    // Let the new instance's message listener register.
+    await new Promise((r) => setTimeout(r, 120));
+    return true;
+  } catch (e) {
+    console.warn("[evernav] could not inject content script:", e.message);
+    return false;
+  }
+}
+
 async function dispatchToContent(tabId, msg) {
   try {
     return await chrome.tabs.sendMessage(tabId, msg);
   } catch (e) {
-    console.warn("[evernav] content script not present:", e.message);
-    return null;
+    const orphaned = String(e.message || "").includes("Receiving end");
+    if (!orphaned) {
+      console.warn("[evernav] content script error:", e.message);
+      return null;
+    }
+    // Orphaned content script (e.g. extension was reloaded while tab stayed
+    // open). Inject a fresh one and retry once.
+    console.log("[evernav] content script orphaned — re-injecting");
+    const ok = await ensureContentScript(tabId);
+    if (!ok) return null;
+    try {
+      return await chrome.tabs.sendMessage(tabId, msg);
+    } catch (e2) {
+      console.warn("[evernav] retry after inject failed:", e2.message);
+      return null;
+    }
   }
 }
 
