@@ -132,25 +132,25 @@ function clearOverlay() {
 
 function positionElements(target) {
   const rect = target.getBoundingClientRect();
-  const pad = 4;
+  const HALO_PAD = 12;   // room for the glow + ring stack
+  const CLONE_PAD = 3;   // a touch larger than the element so blur edges never seep through
   const halo = document.getElementById("__evernav_halo__");
   const clone = document.getElementById("__evernav_clone__");
   const tip = document.getElementById("__evernav_tooltip__");
 
-  const setBox = (el, r) => {
-    if (!el) return;
-    el.style.top = `${r.top - pad}px`;
-    el.style.left = `${r.left - pad}px`;
-    el.style.width = `${r.width + pad * 2}px`;
-    el.style.height = `${r.height + pad * 2}px`;
-  };
-  setBox(halo, rect);
+  if (halo) {
+    halo.style.top = `${rect.top - HALO_PAD}px`;
+    halo.style.left = `${rect.left - HALO_PAD}px`;
+    halo.style.width = `${rect.width + HALO_PAD * 2}px`;
+    halo.style.height = `${rect.height + HALO_PAD * 2}px`;
+  }
 
   if (clone) {
-    clone.style.top = `${rect.top}px`;
-    clone.style.left = `${rect.left}px`;
-    clone.style.width = `${rect.width}px`;
-    clone.style.height = `${rect.height}px`;
+    clone.style.top = `${rect.top - CLONE_PAD}px`;
+    clone.style.left = `${rect.left - CLONE_PAD}px`;
+    clone.style.width = `${rect.width + CLONE_PAD * 2}px`;
+    clone.style.height = `${rect.height + CLONE_PAD * 2}px`;
+    clone.style.padding = `${CLONE_PAD}px`;
   }
 
   if (tip) {
@@ -454,17 +454,17 @@ function toggleBigBadge() {
     bigBadgeEl.id = "__evernav_big_badge__";
     Object.assign(bigBadgeEl.style, {
       position: "fixed",
-      top: "20px",
-      right: "20px",
+      top: "24px",
+      right: "24px",
       zIndex: "2147483647",
-      padding: "12px 22px",
-      background: "#0e1116",
-      color: "#00ff88",
-      font: "700 28px/1.1 ui-monospace, 'SF Mono', Menlo, monospace",
-      letterSpacing: "1px",
-      border: "2px solid #00ff88",
-      borderRadius: "12px",
-      boxShadow: "0 0 32px rgba(0,255,136,0.45)",
+      padding: "16px 28px",
+      background: "#0F1419",
+      color: "#F1EFE9",
+      font: "600 30px/1.05 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.5px",
+      border: "1px solid rgba(124, 139, 104, 0.6)",
+      borderRadius: "999px",
+      boxShadow: "0 16px 48px rgba(15, 20, 25, 0.45), 0 0 0 4px rgba(124, 139, 104, 0.18)",
       pointerEvents: "none",
     });
     bigBadgeEl.textContent = activeUser || "demo_user_1";

@@ -5,75 +5,93 @@
   <title>EverNav</title>
   <style>
     :root {
-      --bg: #0e1116;
-      --panel: #161b22;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #00ff88;
-      --border: #30363d;
+      --cream:    #F1EFE9;
+      --paper:    #FAF8F2;
+      --ink:      #0F1419;
+      --ink-soft: #2A2E33;
+      --muted:    #6B6F76;
+      --border:   #E0DBD0;
+      --sage:     #7C8B68;
+      --sage-deep:#475441;
     }
     * { box-sizing: border-box; }
     body {
-      width: 320px;
+      width: 340px;
       margin: 0;
-      padding: 14px;
-      background: var(--bg);
-      color: var(--text);
-      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 18px 18px 16px;
+      background: var(--cream);
+      color: var(--ink);
+      font: 13px/1.5 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    h1 {
-      margin: 0 0 10px;
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+    .head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
     }
-    h1 .dot {
-      display: inline-block;
-      width: 8px; height: 8px;
-      background: var(--accent);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: -0.1px;
+    }
+    .brand .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--sage);
       border-radius: 50%;
-      margin-right: 6px;
-      vertical-align: middle;
+      box-shadow: 0 0 0 3px rgba(124, 139, 104, 0.18);
     }
     .user-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 8px;
-      background: var(--panel);
+      padding: 8px 12px;
+      background: var(--paper);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      margin-bottom: 10px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      font-size: 12px;
     }
+    .user-row .label { color: var(--muted); }
     .user-badge {
       font-family: ui-monospace, "SF Mono", Menlo, monospace;
       font-size: 11px;
-      color: var(--accent);
+      color: var(--ink);
+      font-weight: 600;
+      margin-left: 6px;
     }
     .user-switch {
-      background: none;
-      border: 1px solid var(--border);
+      background: transparent;
+      border: none;
       color: var(--muted);
-      font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
+      font-size: 11px;
       cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 999px;
     }
-    .user-switch:hover { color: var(--text); }
+    .user-switch:hover {
+      color: var(--ink);
+      background: var(--cream);
+    }
     textarea {
       width: 100%;
-      min-height: 60px;
-      padding: 8px;
-      background: var(--panel);
-      color: var(--text);
+      min-height: 80px;
+      padding: 12px 14px;
+      background: var(--paper);
+      color: var(--ink);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      font: inherit;
+      border-radius: 12px;
+      font: 13px/1.5 'Inter', -apple-system, sans-serif;
       resize: vertical;
     }
+    textarea::placeholder { color: var(--muted); }
     textarea:focus {
       outline: none;
-      border-color: var(--accent);
+      border-color: var(--ink);
     }
     .actions {
       display: flex;
@@ -82,52 +100,71 @@
     }
     button.primary {
       flex: 1;
-      padding: 8px 12px;
-      background: var(--accent);
-      color: #001a0e;
+      padding: 11px 14px;
+      background: var(--ink);
+      color: var(--cream);
       border: none;
-      border-radius: 6px;
+      border-radius: 999px;
       font-weight: 600;
+      font-size: 13px;
       cursor: pointer;
+      letter-spacing: -0.1px;
     }
-    button.primary:hover { filter: brightness(1.1); }
+    button.primary:hover { background: var(--ink-soft); }
     button.primary:disabled { opacity: 0.5; cursor: wait; }
     button.secondary {
-      padding: 8px 10px;
-      background: var(--panel);
-      color: var(--text);
+      width: 38px;
+      padding: 0;
+      background: var(--paper);
+      color: var(--muted);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 999px;
       cursor: pointer;
+      font-size: 14px;
+    }
+    button.secondary:hover {
+      color: var(--ink);
+      border-color: var(--ink);
     }
     .status {
-      margin-top: 10px;
-      padding: 8px;
-      font-size: 11px;
+      margin-top: 12px;
+      padding: 10px 14px;
+      font-size: 12px;
       color: var(--muted);
-      background: var(--panel);
+      background: var(--paper);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      min-height: 32px;
+      border-radius: 12px;
+      min-height: 38px;
+      line-height: 1.4;
     }
-    .status.hit { color: var(--accent); border-color: var(--accent); }
-    .status.err { color: #ff6b6b; border-color: #ff6b6b; }
+    .status.hit {
+      color: var(--sage-deep);
+      border-color: var(--sage);
+      background: #F4F2EC;
+    }
+    .status.err {
+      color: #8C2D2D;
+      border-color: #C57272;
+      background: #F8EAEA;
+    }
     a.options {
       display: block;
-      margin-top: 8px;
+      margin-top: 10px;
       text-align: right;
       color: var(--muted);
-      font-size: 10px;
+      font-size: 11px;
       text-decoration: none;
     }
-    a.options:hover { color: var(--text); }
+    a.options:hover { color: var(--ink); }
   </style>
 </head>
 <body>
-  <h1><span class="dot"></span>EverNav</h1>
+  <div class="head">
+    <div class="brand"><span class="dot"></span>EverNav</div>
+  </div>
 
   <div class="user-row">
-    <span>Active user: <span class="user-badge" id="userBadge">demo_user_1</span></span>
+    <span><span class="label">Active</span><span class="user-badge" id="userBadge">demo_user_1</span></span>
     <button class="user-switch" id="switchUser">switch</button>
   </div>
 
@@ -144,7 +181,7 @@
 
   <div class="status" id="status">Ready.</div>
 
-  <a class="options" href="#" id="openOptions">⚙ API keys</a>
+  <a class="options" href="#" id="openOptions">API keys →</a>
 
   <script src="popup.js"></script>
 </body>

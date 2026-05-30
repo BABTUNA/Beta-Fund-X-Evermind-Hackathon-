@@ -5,96 +5,167 @@
   <title>EverNav — API Keys</title>
   <style>
     :root {
-      --bg: #0e1116; --panel: #161b22; --text: #e6edf3;
-      --muted: #8b949e; --accent: #00ff88; --border: #30363d;
+      --cream:    #F1EFE9;
+      --paper:    #FAF8F2;
+      --ink:      #0F1419;
+      --ink-soft: #2A2E33;
+      --muted:    #6B6F76;
+      --border:   #E0DBD0;
+      --sage:     #7C8B68;
+      --sage-deep:#475441;
     }
     * { box-sizing: border-box; }
     body {
-      max-width: 520px;
-      margin: 40px auto;
-      padding: 24px;
-      background: var(--bg);
-      color: var(--text);
-      font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 580px;
+      margin: 48px auto;
+      padding: 32px;
+      background: var(--cream);
+      color: var(--ink);
+      font: 14px/1.55 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
-    h1 { font-size: 18px; margin: 0 0 6px; }
-    p.lede { color: var(--muted); margin: 0 0 24px; font-size: 13px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .brand .dot {
+      width: 10px;
+      height: 10px;
+      background: var(--sage);
+      border-radius: 50%;
+      box-shadow: 0 0 0 3px rgba(124, 139, 104, 0.18);
+    }
+    h1 {
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -1px;
+      line-height: 1.05;
+      margin: 0 0 12px;
+    }
+    h1 em {
+      font-style: italic;
+      font-weight: 500;
+      color: var(--sage-deep);
+    }
+    p.lede {
+      color: var(--muted);
+      margin: 0 0 32px;
+      font-size: 15px;
+      max-width: 480px;
+    }
     fieldset {
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 16px;
+      border-radius: 16px;
+      padding: 22px;
       margin: 0 0 16px;
-      background: var(--panel);
+      background: var(--paper);
     }
-    legend { padding: 0 6px; color: var(--muted); font-size: 12px; }
-    label { display: block; margin-bottom: 4px; font-size: 12px; color: var(--muted); }
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      padding: 8px 10px;
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font: 12px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    legend {
+      padding: 0 8px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+      font-weight: 500;
     }
-    input:focus { outline: none; border-color: var(--accent); }
-    .row { margin-bottom: 10px; }
-    .hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
-    button {
-      padding: 10px 16px;
-      background: var(--accent);
-      color: #001a0e;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:hover { filter: brightness(1.1); }
-    .status {
-      margin-top: 12px;
+    label {
+      display: block;
+      margin-bottom: 6px;
       font-size: 12px;
       color: var(--muted);
-      min-height: 16px;
+      font-weight: 500;
     }
-    .status.ok { color: var(--accent); }
-    .warn {
-      background: #2d1b00;
-      border: 1px solid #6b4500;
-      color: #ffd47a;
-      padding: 10px 12px;
-      border-radius: 6px;
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--cream);
+      color: var(--ink);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font: 12px/1.4 ui-monospace, "SF Mono", Menlo, monospace;
+    }
+    input:focus {
+      outline: none;
+      border-color: var(--ink);
+      background: #FFFFFF;
+    }
+    .row { margin-bottom: 14px; }
+    .row:last-child { margin-bottom: 0; }
+    .hint {
+      color: var(--muted);
       font-size: 12px;
-      margin-bottom: 16px;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+    .hint code {
+      background: var(--cream);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+    button {
+      padding: 12px 22px;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: -0.1px;
+    }
+    button:hover { background: var(--ink-soft); }
+    .status {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+    }
+    .status.ok { color: var(--sage-deep); font-weight: 500; }
+    .warn {
+      background: #FBF4E2;
+      border: 1px solid #E7D9A8;
+      color: #6F5417;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <h1>EverNav — API Keys</h1>
+  <div class="brand"><span class="dot"></span>EverNav</div>
+
+  <h1>API <em>keys</em></h1>
   <p class="lede">
-    Keys are stored locally in your browser via <code>chrome.storage.local</code>.
-    They never leave your machine except in direct calls to the listed APIs.
+    Keys stay in your browser via <code style="font-family:ui-monospace;background:var(--paper);padding:1px 6px;border-radius:4px">chrome.storage.local</code>.
+    They leave your machine only in direct calls to the listed APIs.
   </p>
 
   <div class="warn">
-    Bring your own keys. Don't commit these. The keys you paste here are not
-    bundled in the extension build.
+    Bring your own keys. Don't commit these — they're not bundled in the extension build.
   </div>
 
   <fieldset>
-    <legend>Anthropic (Claude vision)</legend>
+    <legend>Anthropic · Claude vision</legend>
     <div class="row">
       <label for="anthropic">API key</label>
       <input type="password" id="anthropic" placeholder="sk-ant-…" autocomplete="off" />
-      <div class="hint">Used for the vision call. Set a spend cap in the Anthropic dashboard before the demo.</div>
+      <div class="hint">Powers the live vision call. Set a spend cap in the Anthropic dashboard before demoing.</div>
     </div>
   </fieldset>
 
   <fieldset>
-    <legend>Evermind EverOS</legend>
+    <legend>Evermind · EverOS</legend>
     <div class="row">
       <label for="evermind">API key</label>
       <input type="password" id="evermind" placeholder="evos_…" autocomplete="off" />
-      <div class="hint">Cloud endpoint at https://api.evermind.ai. Stores and retrieves cached click trails.</div>
+      <div class="hint">Cloud endpoint at <code>api.evermind.ai</code>. Stores and retrieves cached click trails.</div>
     </div>
   </fieldset>
 
@@ -107,7 +178,7 @@
     <div class="row">
       <label for="bbAppId">App ID</label>
       <input type="text" id="bbAppId" placeholder="app_0aemhsdroh0j" autocomplete="off" />
-      <div class="hint">The Butterbase app_id (returned by <code>init_app</code>). Looks like <code>app_xxxxxxxxxxxx</code>.</div>
+      <div class="hint">Returned by <code>init_app</code>. Looks like <code>app_xxxxxxxxxxxx</code>.</div>
     </div>
   </fieldset>
 

@@ -2,22 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-// Build-time config. Set in dashboard/.env.local before `next build`.
-// NEXT_PUBLIC_* vars get inlined into the static bundle.
 const BB_BASE = process.env.NEXT_PUBLIC_BUTTERBASE_BASE || "https://api.butterbase.ai/v1";
 const BB_APP = process.env.NEXT_PUBLIC_BB_APP_ID || "";
 const BB_KEY = process.env.NEXT_PUBLIC_BB_READ_KEY || "";
 
 async function fetchSessions() {
   if (!BB_APP || !BB_KEY) return null;
-  // GET /v1/{app_id}/{table} — confirmed via Butterbase MCP docs.
   const url = `${BB_BASE}/${encodeURIComponent(BB_APP)}/sessions?order=completed_at.desc&limit=100`;
-  const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${BB_KEY}` },
-  });
+  const resp = await fetch(url, { headers: { Authorization: `Bearer ${BB_KEY}` } });
   if (!resp.ok) throw new Error(`butterbase ${resp.status}`);
   const data = await resp.json();
-  // Be liberal about the shape — could be { rows: [...] } or just [...].
   if (Array.isArray(data)) return data;
   return data?.rows || data?.data || [];
 }
@@ -29,16 +23,12 @@ function deriveCounts(rows) {
     if (r.user_id) users.add(r.user_id);
     if (r.site && r.task) skills.add(`${r.site}::${r.task}`);
   }
-  return {
-    sessions: rows.length,
-    users: users.size,
-    skills: skills.size,
-  };
+  return { sessions: rows.length, users: users.size, skills: skills.size };
 }
 
 export default function Home() {
   const [counts, setCounts] = useState({ sessions: 0, users: 0, skills: 0 });
-  const [state, setState] = useState("loading"); // loading | live | unconfigured | error
+  const [state, setState] = useState("loading");
 
   useEffect(() => {
     let cancelled = false;
@@ -58,21 +48,37 @@ export default function Home() {
         setState("error");
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   const display = (n) => (state === "loading" ? "…" : state === "unconfigured" ? "—" : n);
 
   return (
     <main className="wrap">
-      <header>
+      <div className="topbar">
+        <div className="brand">
+          <span className="dot" />
+          EverNav
+        </div>
+        <nav className="nav-links">
+          <a href="#">Skills</a>
+          <a href="#">Sessions</a>
+          <a href="#">About</a>
+        </nav>
+        <button className="cta">Get the extension</button>
+      </div>
+
+      <section className="hero">
+        <span className="kicker">Live agent navigation</span>
         <h1>
-          <span className="dot" /> EverNav
+          Web UIs are hostile. <em>EverNav</em> shows you exactly where to click.
         </h1>
-        <p className="tag">Click-trail skills, learned once, replayed forever.</p>
-      </header>
+        <p>
+          A Chrome extension that watches the page and guides you through complex
+          flows — rotate a token, configure a webhook, change a setting — one
+          glowing step at a time. Every solved task becomes shared knowledge.
+        </p>
+      </section>
 
       <section className="grid">
         <div className="card">
@@ -90,13 +96,18 @@ export default function Home() {
       </section>
 
       <footer>
-        {state === "live" && <span>Live from Butterbase.</span>}
-        {state === "loading" && <span>Loading…</span>}
+        <span>EverNav · Beta Fund × Evermind hackathon · 2026</span>
+        {state === "live" && (
+          <span className="status-pill"><span className="pulse" />Live from Butterbase</span>
+        )}
+        {state === "loading" && (
+          <span className="status-pill">Loading…</span>
+        )}
         {state === "unconfigured" && (
-          <span>Set NEXT_PUBLIC_BB_APP_ID and NEXT_PUBLIC_BB_READ_KEY in .env.local, then rebuild.</span>
+          <span className="status-pill">Set NEXT_PUBLIC_BB_APP_ID + READ_KEY, rebuild.</span>
         )}
         {state === "error" && (
-          <span>Couldn't reach Butterbase — check console.</span>
+          <span className="status-pill">Couldn't reach Butterbase.</span>
         )}
       </footer>
     </main>
