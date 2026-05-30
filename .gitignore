@@ -12,6 +12,11 @@ dashboard/out/
 dashboard/node_modules/
 *.crx
 *.pem
+*.zip
+
+# Python virtualenv
+.venv/
+__pycache__/
 
 # OS / editor
 .DS_Store
