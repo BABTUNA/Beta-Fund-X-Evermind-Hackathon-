@@ -30,7 +30,10 @@
 
   "content_scripts": [
     {
-      "matches": ["https://github.com/*"],
+      "matches": [
+        "https://github.com/*",
+        "https://*.amazon.com/*"
+      ],
       "js": ["content.js"],
       "css": ["overlay.css"],
       "run_at": "document_idle"
@@ -40,7 +43,10 @@
   "web_accessible_resources": [
     {
       "resources": ["overlay.css"],
-      "matches": ["https://github.com/*"]
+      "matches": [
+        "https://github.com/*",
+        "https://*.amazon.com/*"
+      ]
     }
   ]
 }

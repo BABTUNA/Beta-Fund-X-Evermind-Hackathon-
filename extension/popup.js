@@ -47,8 +47,8 @@ async function startGuidance() {
   }
   const user = await getActiveUser();
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab?.url?.startsWith("https://github.com/")) {
-    setStatus("Open a github.com tab first (MVP scope).", "err");
+  if (!tab?.url || !/^https?:\/\//i.test(tab.url)) {
+    setStatus("Open an https:// page first (chrome:// and similar can't be guided).", "err");
     return;
   }
 
