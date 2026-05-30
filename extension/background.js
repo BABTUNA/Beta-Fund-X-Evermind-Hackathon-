@@ -137,13 +137,116 @@ function parseVisionJson(text) {
   return parsed;
 }
 
+const EVERMIND_BASE = "https://everos.evermind.ai/api/v1";
+
+function slugify(s) {
+  return String(s)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64);
+}
+
+function sessionIdFor(site, task) {
+  // Encodes site + task into a single filterable field. If filters in Evermind
+  // turns out to accept only user_id (not arbitrary keys), session_id is still
+  // first-class and we can filter on that instead.
+  return `${site}::${slugify(task)}`;
+}
+
 async function evermindRead({ task, site }) {
-  // TODO(commit 10): hybrid search against shared global_skills bucket.
+  const cfg = await getConfig();
+  if (!cfg.evermind) return null;
+
+  const body = {
+    query: `${task} on ${site}`,
+    method: "hybrid",
+    memory_types: ["episodic_memory"],
+    top_k: 3,
+    filters: { user_id: SHARED_USER },
+  };
+
+  let resp;
+  try {
+    resp = await fetch(`${EVERMIND_BASE}/memories/search`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cfg.evermind}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    console.warn("[evernav] evermind unreachable:", e.message);
+    return null;
+  }
+  if (!resp.ok) {
+    console.warn("[evernav] evermind search non-2xx:", resp.status);
+    return null;
+  }
+
+  const data = await resp.json();
+  // The hybrid search response shape can vary; we look for any field that
+  // looks like a list of hits with `content`. Be liberal in what we accept.
+  const hits = data?.results || data?.memories || data?.hits || data?.data || [];
+  const wantId = sessionIdFor(site, task);
+
+  for (const h of hits) {
+    // Try common content paths.
+    const raw =
+      h?.content ||
+      h?.message?.content ||
+      h?.messages?.[0]?.content ||
+      h?.text ||
+      "";
+    if (!raw) continue;
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { continue; }
+    if (!parsed?.trail || !Array.isArray(parsed.trail)) continue;
+
+    // Prefer exact session_id match (set on write); fall back to site match.
+    const matchesId = h?.session_id === wantId || parsed?.session_id === wantId;
+    const matchesSite = parsed?.site === site;
+    if (matchesId || matchesSite) return parsed;
+  }
   return null;
 }
 
 async function evermindWrite({ task, site, trail }) {
-  // TODO(commit 10): POST /memories with trail in content.
+  const cfg = await getConfig();
+  if (!cfg.evermind) return;
+
+  const session_id = sessionIdFor(site, task);
+  const payload = {
+    user_id: SHARED_USER,
+    session_id,
+    messages: [
+      {
+        message_id: `evernav-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        sender_id: "evernav",
+        sender_name: "EverNav Recorder",
+        role: "assistant",
+        timestamp: Date.now(),
+        content: JSON.stringify({ task, site, session_id, trail }),
+      },
+    ],
+  };
+
+  try {
+    const resp = await fetch(`${EVERMIND_BASE}/memories`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cfg.evermind}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) {
+      console.warn("[evernav] evermind write non-2xx:", resp.status, await resp.text());
+    }
+  } catch (e) {
+    console.warn("[evernav] evermind write failed:", e.message);
+  }
 }
 
 async function butterbaseLog({ user, site, task, stepCount }) {
