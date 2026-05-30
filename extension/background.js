@@ -137,7 +137,10 @@ function parseVisionJson(text) {
   return parsed;
 }
 
-const EVERMIND_BASE = "https://everos.evermind.ai/api/v1";
+// Verified against the everos Python SDK v0.4.0 (base_url https://api.evermind.ai,
+// Authorization: Bearer). Endpoints: POST /api/v1/memories, /memories/search,
+// /memories/flush.
+const EVERMIND_BASE = "https://api.evermind.ai/api/v1";
 
 function slugify(s) {
   return String(s)
@@ -186,9 +189,23 @@ async function evermindRead({ task, site }) {
   }
 
   const data = await resp.json();
-  // The hybrid search response shape can vary; we look for any field that
-  // looks like a list of hits with `content`. Be liberal in what we accept.
-  const hits = data?.results || data?.memories || data?.hits || data?.data || [];
+  console.log("[evernav] evermind raw search response:", data);
+
+  // The hybrid search response shape can vary across versions. Walk a few
+  // common spots, coerce object-shaped wrappers to arrays, and never throw.
+  let hits =
+    data?.results ||
+    data?.memories ||
+    data?.hits ||
+    data?.data ||
+    data?.items ||
+    [];
+  if (!Array.isArray(hits)) {
+    if (Array.isArray(hits?.items)) hits = hits.items;
+    else if (Array.isArray(hits?.results)) hits = hits.results;
+    else if (typeof hits === "object" && hits !== null) hits = [hits];
+    else hits = [];
+  }
   const wantId = sessionIdFor(site, task);
 
   for (const h of hits) {
