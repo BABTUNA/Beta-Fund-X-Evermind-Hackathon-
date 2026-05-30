@@ -215,6 +215,10 @@ function renderOverlay(target, instruction, opts = {}) {
       target: sig,
     });
     clearOverlay();
+    if (typeof opts.onCompleted === "function") {
+      // Defer so the page's own click handler runs first.
+      setTimeout(opts.onCompleted, 0);
+    }
   };
   target.addEventListener("click", onClick, { once: true, capture: true });
 
@@ -228,6 +232,106 @@ function escapeHtml(s) {
   }[c]));
 }
 
+// ─── signature-based element re-finding (for cached trail replay) ─────────────
+
+function scoreMatch(candSig, want) {
+  if (!candSig.tag || candSig.tag !== want.tag) return 0;
+  let score = 10;
+  if (want.testid && candSig.testid === want.testid) score += 100;
+  if (want.text && candSig.text && candSig.text === want.text) score += 50;
+  if (want.aria && candSig.aria && candSig.aria === want.aria) score += 30;
+  if (want.role && candSig.role === want.role) score += 10;
+  // Partial text match as a weak signal.
+  if (want.text && candSig.text && candSig.text.includes(want.text)) score += 15;
+  return score;
+}
+
+function findElementBySignature(want) {
+  const all = Array.from(document.querySelectorAll(INTERACTIVE_SELECTOR));
+  let best = null;
+  let bestScore = 0;
+  for (const el of all) {
+    if (!isVisible(el)) continue;
+    const sig = elementSignature(el);
+    const s = scoreMatch(sig, want);
+    if (s > bestScore) {
+      bestScore = s;
+      best = el;
+    }
+  }
+  // Require at least a tag match + one strong attribute.
+  return bestScore >= 25 ? best : null;
+}
+
+// ─── cached-trail replay ──────────────────────────────────────────────────────
+
+let activeReplay = null;
+
+function startReplay(trail) {
+  activeReplay = { trail, step: 0 };
+  advanceReplay();
+}
+
+function advanceReplay() {
+  if (!activeReplay) return;
+  const { trail, step } = activeReplay;
+  if (step >= trail.length) {
+    activeReplay = null;
+    chrome.runtime.sendMessage({ type: "TRAIL_COMPLETE" });
+    return;
+  }
+  const cur = trail[step];
+
+  // Let the DOM settle after the previous click before re-searching.
+  setTimeout(() => {
+    if (!activeReplay) return; // cancelled
+    const target = findElementBySignature(cur.target);
+    if (!target) {
+      chrome.runtime.sendMessage({
+        type: "STEP_FAILED",
+        stepIndex: step,
+        reason: "signature_not_found",
+        want: cur.target,
+      });
+      activeReplay = null;
+      return;
+    }
+    renderOverlay(target, cur.instruction || "Click to continue", {
+      stepIndex: step,
+      onCompleted: () => {
+        activeReplay.step += 1;
+        advanceReplay();
+      },
+    });
+  }, 300);
+}
+
+// ─── turbo + mutation handling ────────────────────────────────────────────────
+//
+// GitHub uses Turbo (turbo:load, turbo:render, turbo:frame-load) to swap DOM
+// without a full page navigation. Any active overlay must be torn down or it
+// will point at a detached node.
+
+function onPageReshape() {
+  if (overlayState && (!overlayState.target.isConnected || !document.documentElement.contains(overlayState.target))) {
+    clearOverlay();
+    // If we're mid-replay, advanceReplay will re-search on the next tick.
+    if (activeReplay) advanceReplay();
+  }
+}
+
+["turbo:load", "turbo:render", "turbo:frame-load", "turbo:visit"].forEach((evt) => {
+  document.addEventListener(evt, () => {
+    // Wait a beat for the new DOM to actually be present.
+    setTimeout(onPageReshape, 100);
+  });
+});
+
+const mo = new MutationObserver(() => {
+  if (overlayState) onPageReshape();
+});
+mo.observe(document.documentElement, { childList: true, subtree: true });
+
 // ─── messaging ────────────────────────────────────────────────────────────────
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -240,7 +344,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         }
         case "REPLAY_TRAIL": {
-          // TODO(commit 7+): drive overlay through cached trail.
+          startReplay(msg.trail || []);
           sendResponse({ ok: true, queued: msg.trail?.length || 0 });
           break;
         }
