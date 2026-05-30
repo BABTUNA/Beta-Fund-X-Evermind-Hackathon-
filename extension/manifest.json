@@ -13,10 +13,7 @@
   ],
 
   "host_permissions": [
-    "https://github.com/*",
-    "https://api.anthropic.com/*",
-    "https://*.evermind.ai/*",
-    "https://api.butterbase.ai/*"
+    "<all_urls>"
   ],
 
   "background": {
