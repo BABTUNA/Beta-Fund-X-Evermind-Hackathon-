@@ -249,8 +249,42 @@ async function evermindWrite({ task, site, trail }) {
   }
 }
 
+// URL pattern is INFERRED — confirm via Butterbase MCP before demoing.
+// Ask Claude Code with the BB MCP installed: "what's the runtime POST URL
+// for inserting a row into the sessions table of app <appId>?"
+const BUTTERBASE_BASE = "https://api.butterbase.ai/v1";
+
 async function butterbaseLog({ user, site, task, stepCount }) {
-  // TODO(commit 11): POST one row into sessions table.
+  const cfg = await getConfig();
+  if (!cfg.butterbase || !cfg.bbAppId) {
+    console.warn("[evernav] butterbase key/appId not set — skipping log");
+    return;
+  }
+
+  const url = `${BUTTERBASE_BASE}/apps/${encodeURIComponent(cfg.bbAppId)}/tables/sessions/rows`;
+  const body = {
+    user_id: user,
+    site,
+    task,
+    step_count: stepCount,
+    completed_at: new Date().toISOString(),
+  };
+
+  try {
+    const resp = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${cfg.butterbase}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) {
+      console.warn("[evernav] butterbase log non-2xx:", resp.status, await resp.text());
+    }
+  } catch (e) {
+    console.warn("[evernav] butterbase log failed:", e.message);
+  }
 }
 
 // ─── orchestration ────────────────────────────────────────────────────────────
