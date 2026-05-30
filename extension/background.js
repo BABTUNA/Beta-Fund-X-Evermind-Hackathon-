@@ -419,6 +419,9 @@ async function startGuidance({ task, user, tabId, url }) {
     task, user, site, tabId,
     trail: [], step: 0, status: "active", source: "live",
   });
+  // Persistent control bar — the popup vanishes the moment the user clicks
+  // anywhere outside it, so we need a Stop button that lives on the page.
+  await dispatchToContent(tabId, { type: "SHOW_CONTROL", task });
   // Always live. Evermind still gets written to on completion so the
   // knowledge base grows with every demo, but we don't short-circuit
   // the agent — judges should see the model actually reasoning.
@@ -428,6 +431,8 @@ async function startGuidance({ task, user, tabId, url }) {
 
 async function stopGuidance({ tabId }) {
   await dispatchToContent(tabId, { type: "CLEAR_OVERLAY" });
+  await dispatchToContent(tabId, { type: "HIDE_THINKING" });
+  await dispatchToContent(tabId, { type: "HIDE_CONTROL" });
   await stopKeepAlive();
   await clearState();
   return { ok: true };
@@ -666,6 +671,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         case "STOP_GUIDANCE":
           sendResponse(await stopGuidance(msg));
           break;
+        case "STOP_GUIDANCE_FROM_PAGE": {
+          // Stop button on the in-page control bar — tabId isn't on the msg,
+          // pull it from sender or state.
+          const tabId = sender?.tab?.id ?? (await getState())?.tabId;
+          if (tabId != null) await stopGuidance({ tabId });
+          sendResponse({ ok: true });
+          break;
+        }
         case "STEP_COMPLETED":
           await onStepCompleted(msg);
           sendResponse({ ok: true });

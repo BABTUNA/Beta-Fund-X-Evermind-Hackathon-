@@ -276,6 +276,32 @@ function hideThinking() {
   thinkingDim = null;
 }
 
+// ─── persistent control bar (Stop button while guidance is active) ──────────
+
+let controlEl = null;
+
+function showControl(task) {
+  hideControl();
+  controlEl = document.createElement("div");
+  controlEl.id = "__evernav_control__";
+  controlEl.innerHTML = `
+    <span class="__evernav_control_dot__"></span>
+    <span class="__evernav_control_label__">Guiding</span>
+    <span class="__evernav_control_task__">${escapeHtml(task || "")}</span>
+    <button class="__evernav_stop__" type="button">Stop</button>
+  `;
+  document.documentElement.appendChild(controlEl);
+  controlEl.querySelector(".__evernav_stop__").addEventListener("click", (e) => {
+    e.stopPropagation();
+    chrome.runtime.sendMessage({ type: "STOP_GUIDANCE_FROM_PAGE" });
+  });
+}
+
+function hideControl() {
+  controlEl?.remove();
+  controlEl = null;
+}
+
 // ─── signature-based element re-finding (for cached trail replay) ─────────────
 
 function scoreMatch(candSig, want) {
@@ -412,6 +438,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         }
         case "HIDE_THINKING": {
           hideThinking();
+          sendResponse({ ok: true });
+          break;
+        }
+        case "SHOW_CONTROL": {
+          showControl(msg.task);
+          sendResponse({ ok: true });
+          break;
+        }
+        case "HIDE_CONTROL": {
+          hideControl();
           sendResponse({ ok: true });
           break;
         }
