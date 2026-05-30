@@ -63,10 +63,8 @@ async function startGuidance() {
       tabId: tab.id,
       url: tab.url,
     });
-    if (resp?.cacheHit) {
-      setStatus(`Cache hit — replaying ${resp.steps} steps from memory.`, "hit");
-    } else if (resp?.ok) {
-      setStatus(`Guiding live (${resp.steps || "?"} steps).`);
+    if (resp?.ok) {
+      setStatus("Agent is reading the page — watch for the green glow.", "hit");
     } else {
       setStatus(resp?.error || "Failed to start.", "err");
     }

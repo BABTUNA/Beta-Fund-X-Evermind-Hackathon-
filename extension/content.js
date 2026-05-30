@@ -232,6 +232,35 @@ function escapeHtml(s) {
   }[c]));
 }
 
+// ─── "agent thinking" indicator (shown while waiting for Claude) ─────────────
+
+let thinkingEl = null;
+let thinkingDim = null;
+
+function showThinking(label) {
+  hideThinking();
+
+  thinkingDim = document.createElement("div");
+  thinkingDim.id = "__evernav_thinking_dim__";
+  document.documentElement.appendChild(thinkingDim);
+
+  thinkingEl = document.createElement("div");
+  thinkingEl.id = "__evernav_thinking__";
+  thinkingEl.innerHTML = `
+    <span class="__evernav_orb__"></span>
+    <span class="__evernav_label__">${escapeHtml(label || "EverNav is thinking")}</span>
+    <span class="__evernav_dots__"><span></span><span></span><span></span></span>
+  `;
+  document.documentElement.appendChild(thinkingEl);
+}
+
+function hideThinking() {
+  thinkingEl?.remove();
+  thinkingEl = null;
+  thinkingDim?.remove();
+  thinkingDim = null;
+}
+
 // ─── signature-based element re-finding (for cached trail replay) ─────────────
 
 function scoreMatch(candSig, want) {
@@ -349,13 +378,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           break;
         }
         case "HIGHLIGHT_INDEX": {
+          hideThinking();
           const el = resolveIndex(msg.idx);
           const drawn = renderOverlay(el, msg.instruction, { stepIndex: msg.stepIndex });
           sendResponse({ ok: drawn, found: !!el });
           break;
         }
         case "CLEAR_OVERLAY": {
+          hideThinking();
           clearOverlay();
+          sendResponse({ ok: true });
+          break;
+        }
+        case "SHOW_THINKING": {
+          showThinking(msg.label);
+          sendResponse({ ok: true });
+          break;
+        }
+        case "HIDE_THINKING": {
+          hideThinking();
           sendResponse({ ok: true });
           break;
         }

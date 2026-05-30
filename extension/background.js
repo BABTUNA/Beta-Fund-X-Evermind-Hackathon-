@@ -308,21 +308,13 @@ async function butterbaseLog({ user, site, task, stepCount }) {
 async function startGuidance({ task, user, tabId, url }) {
   const site = new URL(url).hostname;
   await startKeepAlive();
-  await setState({ task, user, site, tabId, trail: [], step: 0, status: "active" });
-
-  // Cache check first.
-  const cached = await evermindRead({ task, site });
-  if (cached && Array.isArray(cached.trail) && cached.trail.length > 0) {
-    await setState({ trail: cached.trail, source: "cache" });
-    await dispatchToContent(tabId, {
-      type: "REPLAY_TRAIL",
-      trail: cached.trail,
-    });
-    return { ok: true, cacheHit: true, steps: cached.trail.length };
-  }
-
-  // Live path: capture viewport + ask vision for first step.
-  await setState({ source: "live" });
+  await setState({
+    task, user, site, tabId,
+    trail: [], step: 0, status: "active", source: "live",
+  });
+  // Always live. Evermind still gets written to on completion so the
+  // knowledge base grows with every demo, but we don't short-circuit
+  // the agent — judges should see the model actually reasoning.
   await requestNextLiveStep();
   return { ok: true, cacheHit: false, steps: null };
 }
@@ -344,6 +336,12 @@ async function requestNextLiveStep() {
     return;
   }
 
+  // Show the "thinking" pill on the page before any blocking work.
+  await dispatchToContent(st.tabId, {
+    type: "SHOW_THINKING",
+    label: st.step === 0 ? "Reading the page…" : "Picking the next step…",
+  });
+
   // 1) Screenshot the active tab.
   const screenshotDataUrl = await chrome.tabs.captureVisibleTab(undefined, {
     format: "jpeg",
@@ -355,6 +353,7 @@ async function requestNextLiveStep() {
   const enumResp = await dispatchToContent(st.tabId, { type: "ENUMERATE_ELEMENTS" });
   if (!enumResp?.ok) {
     console.error("[evernav] could not enumerate elements");
+    await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
     return;
   }
   const elements = enumResp.elements;
@@ -370,6 +369,7 @@ async function requestNextLiveStep() {
     });
   } catch (e) {
     console.error("[evernav] vision call failed:", e);
+    await dispatchToContent(st.tabId, { type: "HIDE_THINKING" });
     return;
   }
 
