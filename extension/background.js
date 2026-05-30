@@ -249,9 +249,8 @@ async function evermindWrite({ task, site, trail }) {
   }
 }
 
-// URL pattern is INFERRED — confirm via Butterbase MCP before demoing.
-// Ask Claude Code with the BB MCP installed: "what's the runtime POST URL
-// for inserting a row into the sessions table of app <appId>?"
+// REST API: POST /v1/{app_id}/{table} with the row body as JSON.
+// Confirmed via the Butterbase MCP docs.
 const BUTTERBASE_BASE = "https://api.butterbase.ai/v1";
 
 async function butterbaseLog({ user, site, task, stepCount }) {
@@ -261,7 +260,7 @@ async function butterbaseLog({ user, site, task, stepCount }) {
     return;
   }
 
-  const url = `${BUTTERBASE_BASE}/apps/${encodeURIComponent(cfg.bbAppId)}/tables/sessions/rows`;
+  const url = `${BUTTERBASE_BASE}/${encodeURIComponent(cfg.bbAppId)}/sessions`;
   const body = {
     user_id: user,
     site,

@@ -57,26 +57,41 @@ claude plugin install butterbase
 export BUTTERBASE_API_KEY=bb_sk_...
 ```
 
-Then ask Claude Code: *"create an app called `evernav`, apply this schema, and give me the runtime POST URL for inserting a row."*
+Then ask Claude Code: *"call init_app with name='evernav', then manage_schema apply with this schema."* The MCP tools handle the rest.
 
 ```json
 {
   "tables": {
     "sessions": {
       "columns": {
-        "id":           { "type": "uuid", "primary_key": true, "default": "gen_random_uuid()" },
-        "user_id":      { "type": "text", "nullable": false },
-        "site":         { "type": "text", "nullable": false },
-        "task":         { "type": "text", "nullable": false },
-        "step_count":   { "type": "integer", "default": 0 },
-        "completed_at": { "type": "timestamptz", "default": "now()" }
+        "id":           { "type": "uuid",        "primaryKey": true, "default": "gen_random_uuid()" },
+        "user_id":      { "type": "text",        "nullable": false },
+        "site":         { "type": "text",        "nullable": false },
+        "task":         { "type": "text",        "nullable": false },
+        "step_count":   { "type": "integer",     "nullable": false, "default": "0" },
+        "completed_at": { "type": "timestamptz", "nullable": false, "default": "now()" }
+      },
+      "indexes": {
+        "sessions_completed_at_idx": { "columns": ["completed_at"] }
       }
     }
   }
 }
 ```
 
-If the runtime POST URL differs from `https://api.butterbase.ai/v1/apps/{app_id}/tables/sessions/rows`, update `BUTTERBASE_BASE` in `extension/background.js` and `NEXT_PUBLIC_BUTTERBASE_BASE` in `dashboard/.env.local`.
+`init_app` returns three URLs:
+- `api_url` — `https://api.butterbase.ai/v1/{app_id}` (REST endpoint for the extension)
+- `url` — `https://{subdomain}.butterbase.dev` (where your deployed frontend will live)
+- `subdomain` — your app's subdomain
+
+Note the **app_id** (looks like `app_xxxxxxxxxxxx`) — you'll paste it into the extension options page.
+
+Service-key auth (the `bb_sk_*` token) runs as `butterbase_service` which bypasses RLS automatically — no policy setup needed for the hackathon. The REST data API path is:
+
+```
+POST /v1/{app_id}/sessions     # insert a row
+GET  /v1/{app_id}/sessions     # list rows (supports order/limit/offset)
+```
 
 ### 3. Sideload the extension
 
@@ -96,7 +111,26 @@ npm install
 npm run build      # produces ./out
 ```
 
-Deploy via the Butterbase MCP — ask Claude Code: *"deploy `dashboard/out` as a static frontend for app evernav."* Note the public URL.
+Zip the build output from WSL/Git Bash (NOT PowerShell `Compress-Archive` — it
+writes backslashes into the zip and Cloudflare Pages serves JS as `text/html`):
+
+```bash
+cd out && zip -r ../frontend.zip . && cd ..
+```
+
+Then ask Claude Code (with the Butterbase MCP loaded):
+
+> *"Call `create_frontend_deployment` with framework=`nextjs-static` for app
+> `app_xxxxxxxxxxxx`. Give me the uploadUrl. Then I'll PUT the zip; after that
+> call `manage_frontend` action=`start_deployment` with the deployment_id."*
+
+After upload:
+```bash
+curl -X PUT "<uploadUrl>" -H "Content-Type: application/zip" --data-binary @frontend.zip
+```
+
+Wait for status `READY`, then poll the live URL (`https://{subdomain}.butterbase.dev`)
+until your build appears — Cloudflare edge propagation can take a few minutes.
 
 ### 5. Prime the Evermind cache
 
@@ -126,7 +160,8 @@ See `docs/demo-day-checklist.md` for the 15-minute pre-flight and co-driver hot-
 
 ## Known caveats
 
-- The Butterbase runtime POST URL is **inferred** from documented patterns. Verify via the MCP before relying on it.
+- Butterbase REST contract confirmed via MCP: `POST /v1/{app_id}/{table}` with `Authorization: Bearer bb_sk_...` and a JSON row body.
 - The Evermind cloud `/memories/search` response envelope isn't documented inline; the parser is liberal in what it accepts (`results`, `memories`, `hits`, `data`).
 - The shipped fallback trail in `fixtures/` is a best-guess. Re-record after the first successful live run.
 - Scope is github.com only (manifest content_scripts). Adding sites is one line.
+- Dashboard deploys are Cloudflare Pages — after `READY`, edge propagation can take a few minutes. Poll before declaring it live.

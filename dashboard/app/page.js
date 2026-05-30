@@ -10,8 +10,8 @@ const BB_KEY = process.env.NEXT_PUBLIC_BB_READ_KEY || "";
 
 async function fetchSessions() {
   if (!BB_APP || !BB_KEY) return null;
-  // URL pattern INFERRED — confirm via the Butterbase MCP.
-  const url = `${BB_BASE}/apps/${encodeURIComponent(BB_APP)}/tables/sessions/rows`;
+  // GET /v1/{app_id}/{table} — confirmed via Butterbase MCP docs.
+  const url = `${BB_BASE}/${encodeURIComponent(BB_APP)}/sessions?order=completed_at.desc&limit=100`;
   const resp = await fetch(url, {
     headers: { Authorization: `Bearer ${BB_KEY}` },
   });
